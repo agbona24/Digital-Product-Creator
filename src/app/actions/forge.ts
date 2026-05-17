@@ -55,19 +55,31 @@ Return a JSON object with this exact structure:
   ]
 }`;
 
-  const response = await openai.chat.completions.create({
-    model: MODEL,
-    response_format: { type: "json_object" },
-    messages: [
-      { role: "system", content: SYSTEM_PERSONA },
-      { role: "user", content: prompt },
-    ],
-    temperature: 0.9,
-    max_tokens: 8000,
-  });
+  console.log("[excavatePains] calling model:", MODEL);
+  let response: Awaited<ReturnType<typeof openai.chat.completions.create>>;
+  try {
+    response = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [
+        { role: "system", content: SYSTEM_PERSONA },
+        { role: "user", content: prompt },
+      ],
+      temperature: 0.9,
+      max_tokens: 8000,
+    });
+  } catch (e) {
+    console.error("[excavatePains] OpenAI API error:", e);
+    throw e;
+  }
 
-  const data = JSON.parse(response.choices[0].message.content ?? "{}");
-  return (data.pains ?? []) as PainProblem[];
+  const raw = response.choices[0].message.content ?? "{}";
+  try {
+    const data = JSON.parse(raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim());
+    return (data.pains ?? []) as PainProblem[];
+  } catch {
+    console.error("[excavatePains] JSON parse failed. Raw:", raw.slice(0, 500));
+    throw new Error("AI returned invalid JSON. Please try again.");
+  }
 }
 
 // ─── Stage 3: Validate selected pains ───────────────────────────────────────
@@ -141,7 +153,6 @@ Return a JSON object:
 
   const response = await openai.chat.completions.create({
     model: MODEL,
-    response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PERSONA },
       { role: "user", content: prompt },
@@ -150,7 +161,8 @@ Return a JSON object:
     max_tokens: 8000,
   });
 
-  const data = JSON.parse(response.choices[0].message.content ?? "{}");
+  const raw = response.choices[0].message.content ?? "{}";
+  const data = JSON.parse(raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim());
   return (data.validations ?? []) as PainValidation[];
 }
 
@@ -243,7 +255,6 @@ Return a JSON object:
 
   const response = await openai.chat.completions.create({
     model: MODEL,
-    response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PERSONA },
       { role: "user", content: prompt },
@@ -252,7 +263,8 @@ Return a JSON object:
     max_tokens: 8000,
   });
 
-  const data = JSON.parse(response.choices[0].message.content ?? "{}");
+  const raw = response.choices[0].message.content ?? "{}";
+  const data = JSON.parse(raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim());
   return data.concept as ProductConcept;
 }
 
@@ -332,7 +344,6 @@ Return a JSON object:
 
   const response = await openai.chat.completions.create({
     model: MODEL,
-    response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PERSONA },
       { role: "user", content: prompt },
@@ -341,7 +352,8 @@ Return a JSON object:
     max_tokens: 8000,
   });
 
-  const data = JSON.parse(response.choices[0].message.content ?? "{}");
+  const raw = response.choices[0].message.content ?? "{}";
+  const data = JSON.parse(raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim());
   return data.targeting as AdTargeting;
 }
 
@@ -408,7 +420,6 @@ Return a JSON object:
 
   const response = await openai.chat.completions.create({
     model: MODEL,
-    response_format: { type: "json_object" },
     messages: [
       { role: "system", content: SYSTEM_PERSONA },
       { role: "user", content: prompt },
@@ -417,7 +428,8 @@ Return a JSON object:
     max_tokens: 8000,
   });
 
-  const data = JSON.parse(response.choices[0].message.content ?? "{}");
+  const raw = response.choices[0].message.content ?? "{}";
+  const data = JSON.parse(raw.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim());
   return data.summary as LaunchSummary;
 }
 
@@ -534,22 +546,23 @@ Write PART B of this digital product guide. Return JSON:
   const [responseA, responseB] = await Promise.all([
     openai.chat.completions.create({
       model: MODEL,
-      response_format: { type: "json_object" },
       messages: [{ role: "system", content: SYSTEM_PERSONA }, { role: "user", content: promptA }],
       temperature: 0.85,
       max_tokens: 16000,
     }),
     openai.chat.completions.create({
       model: MODEL,
-      response_format: { type: "json_object" },
       messages: [{ role: "system", content: SYSTEM_PERSONA }, { role: "user", content: promptB }],
       temperature: 0.85,
       max_tokens: 16000,
     }),
   ]);
 
-  const partA = JSON.parse(responseA.choices[0].message.content ?? "{}");
-  const partB = JSON.parse(responseB.choices[0].message.content ?? "{}");
+  const parseJson = (s: string) =>
+    JSON.parse(s.replace(/^```json\s*/i, "").replace(/```\s*$/, "").trim());
+
+  const partA = parseJson(responseA.choices[0].message.content ?? "{}");
+  const partB = parseJson(responseB.choices[0].message.content ?? "{}");
 
   return {
     coverPage: partA.coverPage,

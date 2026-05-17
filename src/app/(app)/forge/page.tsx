@@ -87,8 +87,8 @@ export default function ForgePage() {
     try {
       const result = await excavatePains(n, sub);
       setPains(result);
-    } catch {
-      setError("Failed to excavate pains. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to excavate pains. Please try again.");
     } finally {
       setPainsLoading(false);
     }
@@ -103,8 +103,8 @@ export default function ForgePage() {
     try {
       const result = await validatePains(selected);
       setValidations(result);
-    } catch {
-      setError("Failed to validate pains. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to validate pains. Please try again.");
     } finally {
       setValidationsLoading(false);
     }
@@ -119,8 +119,8 @@ export default function ForgePage() {
     try {
       const result = await generateConcept(pain);
       setConcept(result);
-    } catch {
-      setError("Failed to generate product concept. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to generate product concept. Please try again.");
     } finally {
       setConceptLoading(false);
     }
@@ -139,8 +139,8 @@ export default function ForgePage() {
         concept.buyerAvatar
       );
       setTargeting(result);
-    } catch {
-      setError("Failed to generate ad strategy. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to generate ad strategy. Please try again.");
     } finally {
       setTargetingLoading(false);
     }
@@ -168,8 +168,8 @@ export default function ForgePage() {
         launchSummary: result,
       });
       setProjectId(id);
-    } catch {
-      setError("Failed to generate launch summary. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to generate launch summary. Please try again.");
     } finally {
       setSummaryLoading(false);
     }
@@ -186,8 +186,8 @@ export default function ForgePage() {
       if (projectId) {
         await updateProjectProduct(projectId, result);
       }
-    } catch {
-      setError("Failed to generate product. Please try again.");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to generate product. Please try again.");
     } finally {
       setProductLoading(false);
     }
