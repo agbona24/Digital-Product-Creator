@@ -19,7 +19,7 @@ interface Stage2Props {
 export function Stage2Excavate({ niche, subNiche, pains, isLoading, onNext }: Stage2Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const MIN_SELECT = 3;
+  const MIN_SELECT = 1;
   const MAX_SELECT = 5;
 
   const togglePain = (id: string) => {
@@ -50,7 +50,7 @@ export function Stage2Excavate({ niche, subNiche, pains, isLoading, onNext }: St
           <p className="mt-1 text-muted-foreground">
             AI has surfaced <strong>{pains.length} survival-level pain problems</strong> within{" "}
             <span className="text-primary">{nicheLabel}</span>.
-            Select <strong>3–5</strong> that hit hardest.
+            Select <strong>1–5</strong> that hit hardest.
           </p>
         </div>
         <Badge variant="secondary" className="shrink-0 text-sm">
@@ -59,9 +59,9 @@ export function Stage2Excavate({ niche, subNiche, pains, isLoading, onNext }: St
       </div>
 
       {/* Selection counter */}
-      {selectedIds.size > 0 && selectedIds.size < MIN_SELECT && (
+      {selectedIds.size === 0 && (
         <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-2.5 text-sm text-amber-600 dark:text-amber-400">
-          Select {MIN_SELECT - selectedIds.size} more to continue
+          Select at least 1 pain to continue
         </div>
       )}
       {selectedIds.size >= MIN_SELECT && (
@@ -86,8 +86,8 @@ export function Stage2Excavate({ niche, subNiche, pains, isLoading, onNext }: St
       <div className="flex items-center justify-between border-t border-border/50 pt-6">
         <p className="text-sm text-muted-foreground">
           {canProceed
-            ? `${selectedIds.size} pains selected — ready to validate`
-            : `Select at least ${MIN_SELECT} pains to continue`}
+            ? `${selectedIds.size} pain${selectedIds.size > 1 ? "s" : ""} selected — ready to validate`
+            : "Select at least 1 pain to continue"}
         </p>
         <Button
           size="lg"
