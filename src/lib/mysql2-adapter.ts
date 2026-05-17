@@ -195,10 +195,21 @@ export class PrismaMySQL2 implements SqlDriverAdapterFactory {
   private readonly poolOptions: mysql.PoolOptions;
 
   constructor(urlOrOptions: string | mysql.PoolOptions) {
-    this.poolOptions =
+    const base: mysql.PoolOptions =
       typeof urlOrOptions === "string"
         ? { uri: urlOrOptions }
         : urlOrOptions;
+
+    this.poolOptions = {
+      ...base,
+      // cPanel MySQL servers use self-signed certs — allow SSL without CA verification
+      ssl: { rejectUnauthorized: false },
+      // Serverless-friendly pool: small, fast timeouts
+      connectionLimit: 5,
+      connectTimeout: 10000,
+      waitForConnections: true,
+      queueLimit: 0,
+    };
   }
 
   async connect(): Promise<SqlDriverAdapter> {
